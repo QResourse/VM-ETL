@@ -1,0 +1,4 @@
+export/*.csv
+export/*.xml
+config.xml
+__pycache__
