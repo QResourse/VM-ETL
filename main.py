@@ -29,6 +29,8 @@ DRESPONSEXML = _os.path.join("export","DResponse.xml")
 DETECTIONS = _os.path.join("export","_detections.csv")
 HOSTS = _os.path.join("export","_hosts.csv")
 TAGS = _os.path.join("export","_tags.csv")
+SW = _os.path.join("export","_sw.csv")
+PORTS = _os.path.join("export","_ports.csv")
 
 DateForSearch= Func.getSearchTime()
 dt_string = Func.getStempTime()
@@ -73,6 +75,33 @@ df.to_csv(TAGS,index=False, encoding="utf-8")
 if(configList[6]):
   df.to_sql('Tags', index=False, con=engine,if_exists=if_exists)
   print("Tags CSV upload to SQL")
+
+
+#Start SW data
+cols = ["SCANDATEFORSQL","HOST_ID","SW_NAME","SW_VERSION"]
+rows = []
+
+rows = HF.getHostSoftware(RESPONSEXML,ScanDateforSQL)
+
+df = pd.DataFrame(rows, columns=cols)
+df.to_csv(SW,index=False, encoding="utf-8")
+if(configList[6]):
+  df.to_sql('Tags', index=False, con=engine,if_exists=if_exists)
+  print("SW CSV upload to SQL")
+
+
+#Start SW data
+cols = ["SCANDATEFORSQL","HOST_ID","PORT","PROTOCOL"]
+rows = []
+
+rows = HF.getHostOpenPorts(RESPONSEXML,ScanDateforSQL)
+
+df = pd.DataFrame(rows, columns=cols)
+df.to_csv(PORTS,index=False, encoding="utf-8")
+if(configList[6]):
+  df.to_sql('Tags', index=False, con=engine,if_exists=if_exists)
+  print("port CSV upload to SQL")
+
 
 #start Asset data
 cols = ["SCANDATEFORSQL","HOST_ID","NAME","CREATED","MODIFIED","TYPE","QWEB_HOST_ID","IP_ADDRESS",\

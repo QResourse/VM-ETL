@@ -1,4 +1,4 @@
-# QualysETL
+# Qualys VM ETL
 Qualys HostAsset and VM API parser
 Parse the Detection and Hostasset API output
 
@@ -16,6 +16,11 @@ Change the **USERNAME** and **PASSWORD** information
 
 SQL Will work but the driver needs to be detected by the user. 
 In most cases please just keep the flag **USE_SQL** set to ***false***
+
+
+##Release Notes##
+1.0.0 - Innitial release 
+1.0.1 - support for port & protocol data,installed software information. 
 
 For more information please see
 https://www.qualys.com/docs/qualys-api-vmpc-user-guide.pdf

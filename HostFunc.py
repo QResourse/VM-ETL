@@ -1,3 +1,4 @@
+from typing import Protocol
 import xml.etree.ElementTree as Xet
 import Functions as Func
 
@@ -70,37 +71,52 @@ def getHostAssets(RESPONSEXML,ScanDateforSQL):
     return rows
 
 
-#SQL part
+
+def getHostSoftware(RESPONSEXML,ScanDateforSQL):
+    rows = []
+    tree = Xet.parse(RESPONSEXML)
+    root = tree.getroot()
+    Data = root.find("data")
+    HostAssets  = Data.findall("HostAsset")
+    index = 0
+    for host in HostAssets:
+        print("procecing software ",str(index))
+        id = host.find("id").text
+        swList = host.findall("software/list/HostAssetSoftware")
+        for sw in swList:
+            swName = Func.tryToGetAttribute(sw,"name")
+            swVersion = Func.tryToGetAttribute(sw,"version")
+            rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
+                    "HOST_ID": id,
+                    "SW_NAME": swName,
+                    "SW_VERSION":swVersion
+                    })
+            
+        index+=1
+    return rows
 
 
 
-# conn = Func.connectToSQL()
 
-
-
-# qry = "BULK INSERT " + "Detections" + " FROM '" + _os.path.join(_os.getcwd(),DETECTIONS) + "' WITH (FIRSTROW = 2,FIELDTERMINATOR = ',', ROWTERMINATOR = ' ',  TABLOCK)"
-# cursor = conn.cursor()
-# success = cursor.execute(qry)
-# print("Detections CSV upload to SQL")
-# conn.commit()
-
-# cursor = conn.cursor()
-# qry = "BULK INSERT " + "Tags" + " FROM '" + _os.path.join(_os.getcwd(),TAGS) + "' WITH (FORMAT = 'CSV', FIRSTROW = 2)"
-# success = cursor.execute(qry)
-# conn.commit()
-
-
-# cursor = conn.cursor()
-# qry = "BULK INSERT " + "Tags" + " FROM '" + _os.path.join(_os.getcwd(),TAGS) + "' WITH (FORMAT = 'CSV', FIRSTROW = 2)"
-# success = cursor.execute(qry)
-# conn.commit()
-
-
-# cursor = conn.cursor()
-# qry = "BULK INSERT " + "Assets" + " FROM '" + _os.path.join(_os.getcwd(),HOSTS) + "' WITH (FORMAT = 'CSV',FIRSTROW = 2, FIELDTERMINATOR = ',', ROWTERMINATOR = ' ')"
-# success = cursor.execute(qry)
-# conn.commit()
-
-# cursor.close
-
-
+def getHostOpenPorts(RESPONSEXML,ScanDateforSQL):
+    rows = []
+    tree = Xet.parse(RESPONSEXML)
+    root = tree.getroot()
+    Data = root.find("data")
+    HostAssets  = Data.findall("HostAsset")
+    index = 0
+    for host in HostAssets:
+        print("procecing open ports ",str(index))
+        id = host.find("id").text
+        portList = host.findall("openPort/list/HostAssetOpenPort")
+        for portItem in portList:
+            port = Func.tryToGetAttribute(portItem,"port")
+            Protocol = Func.tryToGetAttribute(portItem,"protocol")
+            rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
+                    "HOST_ID": id,
+                    "PORT": port,
+                    "PROTOCOL":Protocol
+                    })
+            
+        index+=1
+    return rows
