@@ -4,6 +4,19 @@ import Functions as Func
 
 
 
+
+def checkForMoreRecords(RESPONSEXML):
+    tree = Xet.parse(RESPONSEXML)
+    root = tree.getroot()   
+    Data = root.find("hasMoreRecords")
+    return str(Data.text)
+
+def getLastRecord(RESPONSEXML):
+    tree = Xet.parse(RESPONSEXML)
+    root = tree.getroot()   
+    Data = root.find("lastId")
+    return str(Data.text)
+
 def getHostTags(RESPONSEXML,ScanDateforSQL):
     rows = []
     tree = Xet.parse(RESPONSEXML)

@@ -4,6 +4,8 @@ import xml.etree.ElementTree as Xet
 import base64
 from datetime import timedelta, date
 import pyodbc 
+import HostFunc as HF
+import os as _os
 
 
 def connectToSQL():
@@ -53,8 +55,8 @@ def getStempTime():
 
 
 
-def getXmlPayload():
-    payload = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n<ServiceRequest>\r\n    <filters>\r\n        <Criteria field=\"lastVulnScan\" operator=\"GREATER\">"+str(getSearchTime())+"</Criteria>\r\n    </filters>\r\n</ServiceRequest>"
+def getXmlPayload(id):
+    payload = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n<ServiceRequest>\r\n    <filters>\r\n        <Criteria field=\"lastVulnScan\" operator=\"GREATER\">"+str(getSearchTime())+"</Criteria>\r\n <Criteria field=\"id\" operator=\"GREATER\">"+str(id)+"</Criteria>\r\n    </filters>\r\n</ServiceRequest>"
     return payload
 
 
@@ -109,3 +111,39 @@ def postRequest(URL,payload,headers,files=[]):
         return {"Error"}
     else:
         return  response
+
+
+
+
+def pocessHostRequests(response,RESPONSEXML,URL,payload,header):
+    #Create response and get hosts
+    RESPONSE_FILEARRAY = []
+    index = 1
+    while(HF.checkForMoreRecords(RESPONSEXML) == 'true'):
+    #create a new file from RESPONSE.xml for storage
+        filename = "Response_" + str(index)+".xml"
+        newFile =_os.path.join("export",filename)
+        RESPONSE_FILEARRAY.append(newFile)
+        with open(newFile, "w") as f:
+            f.write(response.text.encode("utf8").decode("ascii", "ignore"))
+            f.close()
+        lastId = HF.getLastRecord(RESPONSEXML)
+        payload = getXmlPayload(lastId)
+        response = postRequest(URL,payload,header)
+        with open(RESPONSEXML, "w") as f:
+            f.write(response.text.encode("utf8").decode("ascii", "ignore"))
+            f.close()
+        index+=1
+        print(lastId)
+
+    #Write the last response to file
+    filename = "Response_" + str(index)+".xml"
+    newFile =_os.path.join("export",filename)
+    RESPONSE_FILEARRAY.append(newFile)
+
+    with open(newFile, "w") as f:
+        f.write(response.text.encode("utf8").decode("ascii", "ignore"))
+        f.close()
+
+    print(RESPONSE_FILEARRAY)
+    return RESPONSE_FILEARRAY

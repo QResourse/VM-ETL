@@ -1,10 +1,11 @@
+
 import pandas as pd 
-import xml.etree.ElementTree as Xet
 import Functions as Func
-import HostFunc as HF
+
 import DetectFunc as Detect
 import os as _os
 from sqlalchemy import create_engine
+import HostWrapper as HW
 
 
 
@@ -32,6 +33,8 @@ TAGS = _os.path.join("export","_tags.csv")
 SW = _os.path.join("export","_sw.csv")
 PORTS = _os.path.join("export","_ports.csv")
 
+
+
 DateForSearch= Func.getSearchTime()
 dt_string = Func.getStempTime()
 ScanDateforSQL = dt_string
@@ -49,8 +52,8 @@ if(configList[6]):
 if_exists = 'replace'
 
 #processing hostasset api 
-header = Func.getXmlHeader(True,USERNAME,PASSWORD)
-payload = Func.getXmlPayload()
+header = Func.getXmlHeader(False,USERNAME,PASSWORD)
+payload = Func.getXmlPayload(0)
 response = Func.postRequest(URL,payload,header)
 
 
@@ -63,57 +66,27 @@ with open(RESPONSEXML, "w") as f:
     f.write(response.text.encode("utf8").decode("ascii", "ignore"))
     f.close()
 
+ #Create response and get hosts
+RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,RESPONSEXML,URL,payload,header)
 
 #Start Tags data
-cols = ["SCANDATEFORSQL","HOST_ID","TAG_ID","TAG_NAME"]
-rows = []
-
-rows = HF.getHostTags(RESPONSEXML,ScanDateforSQL)
-
-df = pd.DataFrame(rows, columns=cols)
-df.to_csv(TAGS,index=False, encoding="utf-8")
-if(configList[6]):
-  df.to_sql('Tags', index=False, con=engine,if_exists=if_exists)
-  print("Tags CSV upload to SQL")
+HW.getTagInfo(RESPONSE_FILEARRAY,TAGS,ScanDateforSQL)
 
 
 #Start SW data
-cols = ["SCANDATEFORSQL","HOST_ID","SW_NAME","SW_VERSION"]
-rows = []
-
-rows = HF.getHostSoftware(RESPONSEXML,ScanDateforSQL)
-
-df = pd.DataFrame(rows, columns=cols)
-df.to_csv(SW,index=False, encoding="utf-8")
-if(configList[6]):
-  df.to_sql('Tags', index=False, con=engine,if_exists=if_exists)
-  print("SW CSV upload to SQL")
+HW.getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL)
 
 
-#Start SW data
-cols = ["SCANDATEFORSQL","HOST_ID","PORT","PROTOCOL"]
-rows = []
+#Start Port data
+HW.GetPortInfo(RESPONSE_FILEARRAY,PORTS,ScanDateforSQL)
 
-rows = HF.getHostOpenPorts(RESPONSEXML,ScanDateforSQL)
-
-df = pd.DataFrame(rows, columns=cols)
-df.to_csv(PORTS,index=False, encoding="utf-8")
-if(configList[6]):
-  df.to_sql('Tags', index=False, con=engine,if_exists=if_exists)
-  print("port CSV upload to SQL")
-
+#Starting Host Data
+df = pd.read_csv(TAGS)
+tags_for_columns =  df.TAG_NAME.unique()
+list_of_tags=list(tags_for_columns)
 
 #start Asset data
-cols = ["SCANDATEFORSQL","HOST_ID","NAME","CREATED","MODIFIED","TYPE","QWEB_HOST_ID","IP_ADDRESS",\
-    "FQDN","OPERATING_SYSTEM","DNS_NAME","AGENT_VERSION","AGENT_ID","STATUS","LAST_CHEKCED_IN"]
-rows= HF.getHostAssets(RESPONSEXML,ScanDateforSQL)
-
-df = pd.DataFrame(rows, columns=cols)
-df.to_csv(HOSTS,index=False, encoding="utf-8")
-
-if(configList[6]):
-  df.to_sql('Assets', index=False, con=engine,if_exists=if_exists)
-  print("Assets CSV upload to SQL")
+HW.GetAssetInfo(RESPONSE_FILEARRAY,HOSTS,ScanDateforSQL,list_of_tags)
 
 #Start detections
 #base ='https://qualysapi.qg1.apps.qualys.com.au'
