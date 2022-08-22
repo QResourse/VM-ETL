@@ -52,7 +52,7 @@ if(configList[6]):
 if_exists = 'replace'
 
 #processing hostasset api 
-header = Func.getXmlHeader(False,USERNAME,PASSWORD)
+header = Func.getXmlHeader(USERNAME,PASSWORD)
 payload = Func.getXmlPayload(0)
 response = Func.postRequest(URL,payload,header)
 
@@ -107,7 +107,7 @@ payload={'action': 'list',
 'output_format': 'XML',
 'truncation_limit': '1000000'}
 
-header = Func.getHeader(False,USERNAME,PASSWORD)
+header = Func.getHeader(USERNAME,PASSWORD)
 response = Func.postRequest(URL,payload,header)
 
 if (response.ok != True):
