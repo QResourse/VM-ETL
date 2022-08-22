@@ -18,10 +18,11 @@ SQL Will work but the driver needs to be detected by the user.
 In most cases please just keep the flag **USE_SQL** set to ***false***
 
 
-##Release Notes##
-1.0.0 - Innitial release 
-1.0.1 - support for port & protocol data,installed software information. 
+##Release Notes
+1.0.0 - Innitial release;
+1.0.1 - support for port & protocol data,installed software information;
+1.1.1 - Host component support multiple requests;
 
-For more information please see
+#####For more information please see
 https://www.qualys.com/docs/qualys-api-vmpc-user-guide.pdf
 

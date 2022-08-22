@@ -62,38 +62,22 @@ def getXmlPayload(id):
 
 
 ##Override - Delete - remove the False=True option
-def getXmlHeader(Fake,USERNAME={},PASSWORD={}):
-    if (Fake==False):
-        headers = {
-        "Content-Type": "application/xml",
-        "Accept": "application/xml",
-        "X-Requested-With": "QualysPostman",
-        "Authorization": "Basic "+getToken(USERNAME,PASSWORD)
-        }
-    else:
-        headers = {
-        "Content-Type": "application/xml",
-        "Accept": "application/xml",
-        "X-Requested-With": "Qualys",
-        "Authorization": "Basic cWF1eXM0YWE6XjRiQTFZR14yVlFs"
-        }
-
+def getXmlHeader(USERNAME={},PASSWORD={}):
+    headers = {
+    "Content-Type": "application/xml",
+    "Accept": "application/xml",
+    "X-Requested-With": "QualysPostman",
+    "Authorization": "Basic "+getToken(USERNAME,PASSWORD)
+    }
     return headers
 
 
 
-def getHeader(Fake,USERNAME,PASSWORD):
-    if (Fake==False):
-        headers = {
-        "X-Requested-With": "QualysPostman",
-        "Authorization": "Basic "+getToken(USERNAME,PASSWORD)
-        }
-    else:
-        headers = {
-        "X-Requested-With": "Qualys",
-        "Authorization": "Basic cWF1eXM0YWE6XjRiQTFZR14yVlFs"
-        }
-
+def getHeader(USERNAME,PASSWORD):
+    headers = {
+    "X-Requested-With": "QualysPostman",
+    "Authorization": "Basic "+getToken(USERNAME,PASSWORD)
+    }
     return headers
 
 
