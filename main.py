@@ -88,6 +88,7 @@ list_of_tags=list(tags_for_columns)
 #start Asset data
 HW.GetAssetInfo(RESPONSE_FILEARRAY,HOSTS,ScanDateforSQL,list_of_tags)
 
+Func.MergeHostAndTags(HOSTS,TAGS)
 #Start detections
 #base ='https://qualysapi.qg1.apps.qualys.com.au'
 #base = 'https://qualysapi.qg3.apps.qualys.com'

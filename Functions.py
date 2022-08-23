@@ -6,7 +6,7 @@ from datetime import timedelta, date
 import pyodbc 
 import HostFunc as HF
 import os as _os
-
+import pandas as pd 
 
 def connectToSQL():
     conn = pyodbc.connect('Driver={SQL Server};'
@@ -131,3 +131,22 @@ def pocessHostRequests(response,RESPONSEXML,URL,payload,header):
 
     print(RESPONSE_FILEARRAY)
     return RESPONSE_FILEARRAY
+
+
+
+
+def MergeHostAndTags(HOSTS,TAGS):
+    df1 = pd.read_csv(HOSTS)
+    df2 = pd.read_csv(TAGS)
+    #list of hosts from _host file
+    listOfHosts= df1.HOST_ID.unique().tolist()
+    for host in listOfHosts:
+        #all the indexes of tags relevent to host
+        tagIndexList = df2.index[df2['HOST_ID']==host].tolist()
+        print("Host ID: "+ str(host) + "Tag list: "+str(tagIndexList))
+        for index in tagIndexList:
+            TagName =  df2.iloc[index][3]
+            hostIndex = df1.index[df1['HOST_ID']==host].tolist()
+            df1.at[int(hostIndex[0]),TagName] = 1
+    df1.to_csv(HOSTS)
+
