@@ -41,9 +41,9 @@ def getToken(USERNAME,PASSWORD):
 
 
 
-def getSearchTime():
+def getSearchTime(delta):
     today = date.today()
-    lastweek_date = today - timedelta(days=150)
+    lastweek_date = today - timedelta(days=delta)
     DateForSearch=lastweek_date.strftime("%Y-%m-%dT%H:%M:%SZ")
     return DateForSearch
 
@@ -55,8 +55,8 @@ def getStempTime():
 
 
 
-def getXmlPayload(id):
-    payload = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n<ServiceRequest>\r\n    <filters>\r\n        <Criteria field=\"lastVulnScan\" operator=\"GREATER\">"+str(getSearchTime())+"</Criteria>\r\n <Criteria field=\"id\" operator=\"GREATER\">"+str(id)+"</Criteria>\r\n    </filters>\r\n</ServiceRequest>"
+def getXmlPayload(id,delta):
+    payload = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n<ServiceRequest>\r\n    <filters>\r\n        <Criteria field=\"lastVulnScan\" operator=\"GREATER\">"+str(getSearchTime(delta))+"</Criteria>\r\n <Criteria field=\"id\" operator=\"GREATER\">"+str(id)+"</Criteria>\r\n    </filters>\r\n</ServiceRequest>"
     return payload
 
 
@@ -99,7 +99,7 @@ def postRequest(URL,payload,headers,files=[]):
 
 
 
-def pocessHostRequests(response,RESPONSEXML,URL,payload,header):
+def pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta):
     #Create response and get hosts
     RESPONSE_FILEARRAY = []
     index = 1
@@ -112,7 +112,7 @@ def pocessHostRequests(response,RESPONSEXML,URL,payload,header):
             f.write(response.text.encode("utf8").decode("ascii", "ignore"))
             f.close()
         lastId = HF.getLastRecord(RESPONSEXML)
-        payload = getXmlPayload(lastId)
+        payload = getXmlPayload(lastId,delta)
         response = postRequest(URL,payload,header)
         with open(RESPONSEXML, "w") as f:
             f.write(response.text.encode("utf8").decode("ascii", "ignore"))

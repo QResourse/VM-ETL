@@ -32,28 +32,34 @@ HOSTS = _os.path.join("export","_hosts.csv")
 TAGS = _os.path.join("export","_tags.csv")
 SW = _os.path.join("export","_sw.csv")
 PORTS = _os.path.join("export","_ports.csv")
+USESQL = []
 
-
-
-DateForSearch= Func.getSearchTime()
+delta = int(configList[7])
+DateForSearch= Func.getSearchTime(delta)
 dt_string = Func.getStempTime()
 ScanDateforSQL = dt_string
 if(configList[6]):
+  USESQL.append(configList[6])
   DB = {'servername': configList[1],
         'database': configList[5],
         'driver': configList[0]}
   engine = create_engine('mssql+pyodbc://' + DB['servername'] + '/' + DB['database'] + "?" + DB['driver'])
-# conn = Func.connectToSQL()
+  if_exists = 'replace'
+  USESQL.append(engine)
+  USESQL.append(if_exists)
+else:
+  # conn = Func.connectToSQL()
+  USESQL.append(configList[6])
 
 
 # ad table to sql 
 #What to do if the table exists? replace, append, or fail?
 
-if_exists = 'replace'
+
 
 #processing hostasset api 
 header = Func.getXmlHeader(USERNAME,PASSWORD)
-payload = Func.getXmlPayload(0)
+payload = Func.getXmlPayload(0,30)
 response = Func.postRequest(URL,payload,header)
 
 
@@ -67,18 +73,18 @@ with open(RESPONSEXML, "w") as f:
     f.close()
 
  #Create response and get hosts
-RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,RESPONSEXML,URL,payload,header)
+RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta)
 
 #Start Tags data
-HW.getTagInfo(RESPONSE_FILEARRAY,TAGS,ScanDateforSQL)
+HW.getTagInfo(RESPONSE_FILEARRAY,TAGS,ScanDateforSQL,USESQL)
 
 
 #Start SW data
-HW.getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL)
+HW.getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL,USESQL)
 
 
 #Start Port data
-HW.GetPortInfo(RESPONSE_FILEARRAY,PORTS,ScanDateforSQL)
+HW.GetPortInfo(RESPONSE_FILEARRAY,PORTS,ScanDateforSQL,USESQL)
 
 #Starting Host Data
 df = pd.read_csv(TAGS)
@@ -86,7 +92,7 @@ tags_for_columns =  df.TAG_NAME.unique()
 list_of_tags=list(tags_for_columns)
 
 #start Asset data
-HW.GetAssetInfo(RESPONSE_FILEARRAY,HOSTS,ScanDateforSQL,list_of_tags)
+HW.GetAssetInfo(RESPONSE_FILEARRAY,HOSTS,ScanDateforSQL,list_of_tags,USESQL)
 
 Func.MergeHostAndTags(HOSTS,TAGS)
 #Start detections
@@ -119,7 +125,7 @@ with open(DRESPONSEXML, 'w') as f:
     f.write(response.text)
     f.close()
 
-
+rows = []
 rows = Detect.getHostDetections(DRESPONSEXML, ScanDateforSQL)
 
 df = pd.DataFrame(rows, columns=cols)
@@ -130,6 +136,6 @@ df.to_csv(DETECTIONS,index=False, encoding="utf-8")
 #SQL part
 
 
-if(configList[6]):
-  df.to_sql('Detections', index=False, con=engine,if_exists=if_exists)
+if(USESQL[0]):
+  df.to_sql('Detections', index=False, con=USESQL[1],if_exists=USESQL[2])
   print("Detections CSV upload to SQL")

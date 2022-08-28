@@ -23,6 +23,7 @@ In most cases please just keep the flag **USE_SQL** set to ***false***
 1.0.1 - support for port & protocol data,installed software information;
 1.1.1 - Host component support multiple requests;
 1.1.2 - Support to filter host based on tags;
+1.1.3 - use DAYS_OF_STATS to spacify the stats durnation;
 
-##### For more information please see
+#### For more information please see
 <https://www.qualys.com/docs/qualys-api-vmpc-user-guide.pdf>
