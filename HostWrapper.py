@@ -13,7 +13,7 @@ def getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL,USESQL):
 
     df = pd.DataFrame(rows, columns=cols)
     df.to_csv(SW,index=False, encoding="utf-8")
-    if(USESQL):
+    if(USESQL[0]):
         df.to_sql('Tags', index=False,con=USESQL[1],if_exists=USESQL[2])
         print("SW CSV upload to SQL")
 
