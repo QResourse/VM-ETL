@@ -25,7 +25,13 @@ def tryToGetAttribute(Object,inputString):
     
     return output
 
-
+def tryToGetObj(Object,inputString):
+    try:
+        output = Object.find(inputString)
+    except:
+        output = "Null"
+    
+    return output
 
 #SUFFIX = "2VQl"
 
@@ -96,6 +102,20 @@ def postRequest(URL,payload,headers,files=[]):
     else:
         return  response
 
+
+def getRequest(URL,payload,headers,files=[]):
+    print("POSTING to "+ URL)
+    print("Payload: "+ str(payload))
+    try:
+        response = requests.request("GET", URL, headers=headers, data=payload, files=files)
+    except:
+        print("Failed to send request to API")
+    
+    if (response.ok != True):
+        print("Failed to get response from API")
+        return {"Error"}
+    else:
+        return  response
 
 
 

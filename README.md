@@ -30,5 +30,7 @@ In most cases please just keep the flag **USE_SQL** set to ***false***
 1.1.3 - use DAYS_OF_STATS to spacify the stats durnation;
 
 1.1.3.1 - bug fix;
+
+1.2.0 - PC, downloading the latest CSV report
 #### For more information please see
 <https://www.qualys.com/docs/qualys-api-vmpc-user-guide.pdf>

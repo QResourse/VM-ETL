@@ -6,7 +6,8 @@ import DetectFunc as Detect
 import os as _os
 from sqlalchemy import create_engine
 import HostWrapper as HW
-
+import PCFunc as PC
+import csv
 
 
 df = pd.read_xml('config.xml')
@@ -27,6 +28,8 @@ URL = base+URL
 RESPONSEXML = _os.path.join("export","Response.xml")
 RESPONSECSV = _os.path.join("export","Response.csv")
 DRESPONSEXML = _os.path.join("export","DResponse.xml")
+POLICY_LIST_XML = _os.path.join("export","PResponse.XML")
+POLICYCLEAN = _os.path.join("export","_policy.csv")
 DETECTIONS = _os.path.join("export","_detections.csv")
 HOSTS = _os.path.join("export","_hosts.csv")
 TAGS = _os.path.join("export","_tags.csv")
@@ -133,8 +136,47 @@ df = pd.DataFrame(rows, columns=cols)
 df.to_csv(DETECTIONS,index=False, encoding="utf-8")
 
 
-#SQL part
 
+##### PC start 
+## action=fetch&id=119236"
+#Getting a list of all recent scans 
+URL = "/api/2.0/fo/report/"
+action = "?action=list"
+POST_URL = base+URL+action
+payload={}
+
+header = Func.getHeader(USERNAME,PASSWORD)
+response = Func.getRequest(POST_URL,payload,header)
+
+if (response.ok != True):
+    print("Failed to get response from API")
+
+
+with open(POLICY_LIST_XML, 'w') as f:
+    f.write(response.text)
+    f.close()
+
+Scanlist = PC.getPcScans(POLICY_LIST_XML,ScanDateforSQL)
+scans = PC.getListOfScanIds(Scanlist)
+
+#parsing the latest scan
+action = "?action=fetch&id="+scans[0]
+POST_URL = base+URL+action
+response = Func.getRequest(POST_URL,payload,header)
+if (response.ok != True):
+    print("Failed to get response from API")
+
+with open(POLICYCLEAN, 'w') as f:
+    f.write(response.text)
+    f.close()
+
+
+rows = []
+with open(POLICYCLEAN, 'r') as file:
+    reader = csv.reader(file)
+    for row in reader:
+       if (row != []):
+        rows.append(row)
 
 if(USESQL[0]):
   df.to_sql('Detections', index=False, con=USESQL[1],if_exists=USESQL[2])
