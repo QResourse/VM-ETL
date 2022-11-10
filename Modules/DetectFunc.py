@@ -1,6 +1,6 @@
 import pandas as pd 
 import xml.etree.ElementTree as Xet
-import Functions as Func
+import Modules.Functions as Func
 
 
 #Start Detection 

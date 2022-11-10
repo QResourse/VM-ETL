@@ -1,183 +1,151 @@
 
 import pandas as pd 
-import Functions as Func
-
-import DetectFunc as Detect
-import os as _os
-from sqlalchemy import create_engine
-import HostWrapper as HW
-import PCFunc as PC
-import csv
-
-
-df = pd.read_xml('config.xml')
-configList = df.iloc[0].to_list()
+import Modules.Functions as Func
+import Config as Conf
+import Modules.DetectFunc as Detect
+#import os as _os
+#from sqlalchemy import create_engine
+import Modules.HostWrapper as HW
+import Modules.PCFunc as PC
 
 
 
-USERNAME = configList[3]
-PASSWORD = configList[4]
 
-##Start Detection
-base = configList[2]
-###Change the environment POD
-
-
+####################Start######################
+#This is hostasset API part                   #
+###############################################
 URL = "/qps/rest/2.0/search/am/hostasset/"
-URL = base+URL
-RESPONSEXML = _os.path.join("export","Response.xml")
-RESPONSECSV = _os.path.join("export","Response.csv")
-DRESPONSEXML = _os.path.join("export","DResponse.xml")
-POLICY_LIST_XML = _os.path.join("export","PResponse.XML")
-POLICYCLEAN = _os.path.join("export","_policy.csv")
-DETECTIONS = _os.path.join("export","_detections.csv")
-HOSTS = _os.path.join("export","_hosts.csv")
-TAGS = _os.path.join("export","_tags.csv")
-SW = _os.path.join("export","_sw.csv")
-PORTS = _os.path.join("export","_ports.csv")
-USESQL = []
-
-delta = int(configList[7])
-DateForSearch= Func.getSearchTime(delta)
-dt_string = Func.getStempTime()
-ScanDateforSQL = dt_string
-if(configList[6]):
-  USESQL.append(configList[6])
-  DB = {'servername': configList[1],
-        'database': configList[5],
-        'driver': configList[0]}
-  engine = create_engine('mssql+pyodbc://' + DB['servername'] + '/' + DB['database'] + "?" + DB['driver'])
-  if_exists = 'replace'
-  USESQL.append(engine)
-  USESQL.append(if_exists)
-else:
-  # conn = Func.connectToSQL()
-  USESQL.append(configList[6])
-
-
-# ad table to sql 
-#What to do if the table exists? replace, append, or fail?
-
-
+REQUEST_URL = Conf.base+URL
 
 #processing hostasset api 
-header = Func.getXmlHeader(USERNAME,PASSWORD)
+header = Func.getXmlHeader(Conf.USERNAME,Conf.PASSWORD)
 payload = Func.getXmlPayload(0,30)
-response = Func.postRequest(URL,payload,header)
-
+response = Func.postRequest(REQUEST_URL,payload,header)
 
 if (response.ok != True):
   print("Failed to get response from API")
   exit()
 
-
-with open(RESPONSEXML, "w") as f:
+with open(Conf.RESPONSEXML, "w") as f:
     f.write(response.text.encode("utf8").decode("ascii", "ignore"))
     f.close()
 
  #Create response and get hosts
-RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta)
-
+RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,Conf.RESPONSEXML,URL,payload,header,Conf.delta)
 #Start Tags data
-HW.getTagInfo(RESPONSE_FILEARRAY,TAGS,ScanDateforSQL,USESQL)
-
-
+HW.getTagInfo(RESPONSE_FILEARRAY,Conf.TAGS,Conf.ScanDateforSQL,Conf.USESQL)
 #Start SW data
-HW.getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL,USESQL)
-
-
+HW.getSWInfo(RESPONSE_FILEARRAY,Conf.SW,Conf.ScanDateforSQL,Conf.USESQL)
 #Start Port data
-HW.GetPortInfo(RESPONSE_FILEARRAY,PORTS,ScanDateforSQL,USESQL)
+HW.GetPortInfo(RESPONSE_FILEARRAY,Conf.PORTS,Conf.ScanDateforSQL,Conf.USESQL)
 
 #Starting Host Data
-df = pd.read_csv(TAGS)
+df = pd.read_csv(Conf.TAGS)
 tags_for_columns =  df.TAG_NAME.unique()
 list_of_tags=list(tags_for_columns)
 
 #start Asset data
-HW.GetAssetInfo(RESPONSE_FILEARRAY,HOSTS,ScanDateforSQL,list_of_tags,USESQL)
+HW.GetAssetInfo(RESPONSE_FILEARRAY,Conf.HOSTS,Conf.ScanDateforSQL,list_of_tags,Conf.USESQL)
 
-Func.MergeHostAndTags(HOSTS,TAGS)
-#Start detections
-#base ='https://qualysapi.qg1.apps.qualys.com.au'
-#base = 'https://qualysapi.qg3.apps.qualys.com'
+Func.MergeHostAndTags(Conf.HOSTS,Conf.TAGS)
+
+
+
+####################Start######################
+#This is detection API part                   #
+###############################################
 URL = "/api/2.0/fo/asset/host/vm/detection/"
-URL = base+URL
+REQUEST_URL = Conf.base+URL
 cols = ['SCANDATEFORSQL','HOST_ID','IP_ADDRESS','TRACKING_METHOD','NETWORK_ID','OPERATING_SYSTEM','DNS_NAME',\
 'NETBIOS_NAME','DOMAIN','QG_HOSTID','LAST_SCAN_DATETIME','LAST_VM_SCANNED_DATE','LAST_VM_AUTH_SCANNED_DATE','LAST_PC_SCANNED_DATE','QID','TYPE',\
 'FQDN','SSL','STATUS','SEVERITY','FIRST_FOUND_DATETIME','LAST_FOUND_DATETIME','LAST_TEST_DATETIME','LAST_UPDATE_DATETIME',\
 'LAST_FIXED_DATETIME','IGNORED','DISABLED','TIMES_FOUND','LAST_PROCESSED_DATETIME']
 
-
-
-
 payload={'action': 'list',
 'status': 'New,Active,Fixed,Re-Opened',
-'detection_updated_since': DateForSearch,
+'detection_updated_since': Conf.DateForSearch,
 'output_format': 'XML',
 'truncation_limit': '1000000'}
 
-header = Func.getHeader(USERNAME,PASSWORD)
-response = Func.postRequest(URL,payload,header)
+header = Func.getHeader(Conf.USERNAME,Conf.PASSWORD)
+response = Func.postRequest(REQUEST_URL,payload,header)
 
 if (response.ok != True):
   print("Failed to get response from API")
 
 
-with open(DRESPONSEXML, 'w') as f:
+with open(Conf.DRESPONSEXML, 'w') as f:
     f.write(response.text)
     f.close()
 
 rows = []
-rows = Detect.getHostDetections(DRESPONSEXML, ScanDateforSQL)
+rows = Detect.getHostDetections(Conf.DRESPONSEXML, Conf.ScanDateforSQL)
 
 df = pd.DataFrame(rows, columns=cols)
 
-df.to_csv(DETECTIONS,index=False, encoding="utf-8")
+df.to_csv(Conf.DETECTIONS,index=False, encoding="utf-8")
 
 
 
-##### PC start 
-## action=fetch&id=119236"
+####################Start######################
+#This is PC API part                   #
+###############################################
 #Getting a list of all recent scans 
 URL = "/api/2.0/fo/report/"
 action = "?action=list"
-POST_URL = base+URL+action
+REQUEST_URL = Conf.base+URL+action
 payload={}
 
-header = Func.getHeader(USERNAME,PASSWORD)
-response = Func.getRequest(POST_URL,payload,header)
+header = Func.getHeader(Conf.USERNAME,Conf.PASSWORD)
+response = Func.getRequest(REQUEST_URL,payload,header)
 
 if (response.ok != True):
     print("Failed to get response from API")
 
-
-with open(POLICY_LIST_XML, 'w') as f:
+#Writing the response to a XML file 
+with open(Conf.POLICY_LIST_XML, 'w') as f:
     f.write(response.text)
     f.close()
 
-Scanlist = PC.getPcScans(POLICY_LIST_XML,ScanDateforSQL)
+#list of all scans (in all formats)
+Scanlist = PC.getPcScans(Conf.POLICY_LIST_XML,Conf.ScanDateforSQL)
+#list of scan ids (only CSV)
 scans = PC.getListOfScanIds(Scanlist)
+
 
 #parsing the latest scan
 action = "?action=fetch&id="+scans[0]
-POST_URL = base+URL+action
-response = Func.getRequest(POST_URL,payload,header)
+REQUEST_URL = Conf.base+URL+action
+response = Func.getRequest(REQUEST_URL,payload,header)
 if (response.ok != True):
     print("Failed to get response from API")
 
-with open(POLICYCLEAN, 'w') as f:
+#Writing the response to a CSV file (before processing) 
+with open(Conf.POLICYCLEAN, 'w') as f:
     f.write(response.text)
     f.close()
 
 
-rows = []
-with open(POLICYCLEAN, 'r') as file:
-    reader = csv.reader(file)
-    for row in reader:
-       if (row != []):
-        rows.append(row)
+######Start here for debug with static file################
+rows = PC.getAllCsvFileRows()
+GeneralData = PC.getGeneralReportData(rows)
+#getting the header of the summary (Always seventh row)
+headerSummary = GeneralData[7]
+fullSummaryData = PC.getSummaryData(GeneralData)
+#collecting only result data (index starts after summary data ends)
+i = len(GeneralData)+1
+headerResult = rows[i]
+fullResultData = PC.getResultData(rows,GeneralData)
+#summaryDataFrame = pd.DataFrame(fullSummaryData,columns=headerSummary)
 
-if(USESQL[0]):
-  df.to_sql('Detections', index=False, con=USESQL[1],if_exists=USESQL[2])
+resultDataFrame = pd.DataFrame(fullResultData,columns=headerResult)
+resultDataFrame.drop(['Exception Comments History', 'Remediation', 'Evidence','Rationale'], axis=1, inplace=True)
+resultDataFrame.to_csv(Conf.POLICY_RESULT,index = False)
+
+
+
+#######
+if(Conf.USESQL[0]):
+  df.to_sql('Detections', index=False, con=Conf.USESQL[1],if_exists=Conf.USESQL[2])
   print("Detections CSV upload to SQL")
+

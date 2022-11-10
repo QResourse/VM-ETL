@@ -1,0 +1,12 @@
+"CSV_test","11/09/2022 at 15:25:18 (GMT+1100)"
+"Qualys","Melbourne",,,"Victoria","Australia","3000"
+"Amit Avraham","qauys4aa","Manager"
+SUMMARY
+Policy Title,Policy Locking,Policy Modified,Policy Last Evaluated,Asset Groups,IPs,Asset Tags,PC Agent IPs,Technologies,Controls,Assets,Control Instances,Passed,Failures,Error,Approved Exceptions,Pending Exceptions
+"TestUDC","Unlocked","09/12/2022 at 23:41:25 (GMT+1000)","11/09/2022 at 08:36:55 (GMT+1100)",,"N/A","Included(all): windows;
+Excluded(any);","No","Windows 10","1","0","0","0","0","0","0","0"
+Host Statistics (Percentage of Controls Passed per Host)
+IP Address,Tracking Method,DNS Name,Netbios Name,Operating System,Last Scan Date,Percentage,Qualys Host ID,Host ID
+"192.168.1.102","AGENT","labwin10","LABWIN10","Microsoft Windows 10 Pro 10.0.19044 64-bit N/A Build 19044","11/09/2022 at 08:34:46 (GMT+1100)","100% (1 of 1)","d12f55c9-7fad-4715-89d1-141e525e9383","62375"
+RESULTS
+Host IP,DNS Hostname,NetBIOS Hostname,Tracking Method,Operating System,NETWORK,Last Scan Date,Evaluation Date,Control ID,Technology,Control,Criticality Label,Criticality Value,Instance,Rationale,Status,Remediation,Deprecated,Evidence,Exception Assignee,Exception Status,Exception End Date,Exception Creator,Exception Created Date,Exception Modifier,Exception Modified Date,Exception Comments History,Qualys Host ID

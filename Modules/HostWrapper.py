@@ -1,6 +1,6 @@
 
 import pandas as pd
-import HostFunc as HF
+import Modules.HostFunc as HF
 
 def getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL,USESQL):
     #Start SW data

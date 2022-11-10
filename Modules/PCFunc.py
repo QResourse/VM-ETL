@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as Xet
-import Functions as Func
-
+import Modules.Functions as Func
+import csv
+import Config as Conf
 
 
 
@@ -43,3 +44,47 @@ def getPcScans(POLICY_LIST_XML,ScanDateforSQL):
         
 
     return rows
+
+
+
+def getAllCsvFileRows():
+  rows = []
+  with open(Conf.POLICYCLEAN, 'r') as file:
+    reader = csv.reader(file)
+    for row in reader:
+      if (row != []):
+        rows.append(row)
+    
+    return rows
+
+def getGeneralReportData(rows):
+  index = 0 
+  GeneralData = []
+  while(rows[index]):
+    if (rows[index][0] == "RESULTS"):
+      break
+    else:
+      GeneralData.append(rows[index])
+    index+=1
+  
+  return GeneralData 
+
+def getSummaryData(GeneralData):
+  i = 8
+  dataLength = len(GeneralData)
+  #getting the summary data
+  rangeObj = range(8,dataLength)
+  fullSummaryData = []
+  for i in rangeObj:
+    fullSummaryData.append(GeneralData[i])
+  
+  return fullSummaryData
+
+def getResultData(rows,GeneralData):
+  i = len(GeneralData)+1
+  rangeObj = range(i+1,len(rows))
+  fullResultData = []
+  for i in rangeObj:
+    fullResultData.append(rows[i])
+  
+  return fullResultData
