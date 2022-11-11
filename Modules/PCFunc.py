@@ -60,13 +60,12 @@ def getAllCsvFileRows():
 def getGeneralReportData(rows):
   index = 0 
   GeneralData = []
-  while(rows[index]):
+  while(index < len(rows)):
     if (rows[index][0] == "RESULTS"):
       break
     else:
       GeneralData.append(rows[index])
     index+=1
-  
   return GeneralData 
 
 def getSummaryData(GeneralData):

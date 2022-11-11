@@ -3,8 +3,6 @@ import pandas as pd
 import Modules.Functions as Func
 import Config as Conf
 import Modules.DetectFunc as Detect
-#import os as _os
-#from sqlalchemy import create_engine
 import Modules.HostWrapper as HW
 import Modules.PCFunc as PC
 
@@ -31,7 +29,7 @@ with open(Conf.RESPONSEXML, "w") as f:
     f.close()
 
  #Create response and get hosts
-RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,Conf.RESPONSEXML,URL,payload,header,Conf.delta)
+RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,Conf.RESPONSEXML,REQUEST_URL,payload,header,Conf.delta)
 #Start Tags data
 HW.getTagInfo(RESPONSE_FILEARRAY,Conf.TAGS,Conf.ScanDateforSQL,Conf.USESQL)
 #Start SW data
@@ -74,7 +72,7 @@ if (response.ok != True):
   print("Failed to get response from API")
 
 
-with open(Conf.DRESPONSEXML, 'w') as f:
+with open(Conf.DRESPONSEXML, 'w', encoding="utf-8") as f:
     f.write(response.text)
     f.close()
 
@@ -103,7 +101,7 @@ if (response.ok != True):
     print("Failed to get response from API")
 
 #Writing the response to a XML file 
-with open(Conf.POLICY_LIST_XML, 'w') as f:
+with open(Conf.POLICY_LIST_XML, 'w', encoding="utf-8") as f:
     f.write(response.text)
     f.close()
 
@@ -111,7 +109,7 @@ with open(Conf.POLICY_LIST_XML, 'w') as f:
 Scanlist = PC.getPcScans(Conf.POLICY_LIST_XML,Conf.ScanDateforSQL)
 #list of scan ids (only CSV)
 scans = PC.getListOfScanIds(Scanlist)
-
+scans.sort()
 
 #parsing the latest scan
 action = "?action=fetch&id="+scans[0]
@@ -121,30 +119,33 @@ if (response.ok != True):
     print("Failed to get response from API")
 
 #Writing the response to a CSV file (before processing) 
-with open(Conf.POLICYCLEAN, 'w') as f:
+with open(Conf.POLICYCLEAN, 'w', encoding="utf-8") as f:
     f.write(response.text)
     f.close()
 
 
 ######Start here for debug with static file################
-rows = PC.getAllCsvFileRows()
-GeneralData = PC.getGeneralReportData(rows)
-#getting the header of the summary (Always seventh row)
-headerSummary = GeneralData[7]
-fullSummaryData = PC.getSummaryData(GeneralData)
-#collecting only result data (index starts after summary data ends)
-i = len(GeneralData)+1
-headerResult = rows[i]
-fullResultData = PC.getResultData(rows,GeneralData)
-#summaryDataFrame = pd.DataFrame(fullSummaryData,columns=headerSummary)
 
-resultDataFrame = pd.DataFrame(fullResultData,columns=headerResult)
-resultDataFrame.drop(['Exception Comments History', 'Remediation', 'Evidence','Rationale'], axis=1, inplace=True)
-resultDataFrame.to_csv(Conf.POLICY_RESULT,index = False)
+# rows = PC.getAllCsvFileRows()
+# GeneralData = PC.getGeneralReportData(rows)
+# #getting the header of the summary (Always seventh row)
+# headerSummary = GeneralData[7]
+# fullSummaryData = PC.getSummaryData(GeneralData)
+# #collecting only result data (index starts after summary data ends)
+# i = len(GeneralData)+1
+# headerResult = rows[i]
+# fullResultData = PC.getResultData(rows,GeneralData)
+# #summaryDataFrame = pd.DataFrame(fullSummaryData,columns=headerSummary)
+
+# resultDataFrame = pd.DataFrame(fullResultData,columns=headerResult)
+# resultDataFrame.drop(['Exception Comments History', 'Remediation', 'Evidence','Rationale'], axis=1, inplace=True)
+# resultDataFrame.to_csv(Conf.POLICY_RESULT,index = False)
 
 
 
-#######
+####################Start######################
+#Push to SQL                                  #
+###############################################
 if(Conf.USESQL[0]):
   df.to_sql('Detections', index=False, con=Conf.USESQL[1],if_exists=Conf.USESQL[2])
   print("Detections CSV upload to SQL")

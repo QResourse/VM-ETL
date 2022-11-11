@@ -95,6 +95,7 @@ def postRequest(URL,payload,headers,files=[]):
         response = requests.request("POST", URL, headers=headers, data=payload, files=files)
     except:
         print("Failed to send request to API")
+        return str(response.status_code)
     
     if (response.ok != True):
         print("Failed to get response from API")
@@ -120,11 +121,9 @@ def getRequest(URL,payload,headers,files=[]):
 
 
 def pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta):
-    #Create response and get hosts
     RESPONSE_FILEARRAY = []
     index = 1
     while(HF.checkForMoreRecords(RESPONSEXML) == 'true'):
-    #create a new file from RESPONSE.xml for storage
         filename = "Response_" + str(index)+".xml"
         newFile =_os.path.join("export",filename)
         RESPONSE_FILEARRAY.append(newFile)
@@ -139,20 +138,14 @@ def pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta):
             f.close()
         index+=1
         print(lastId)
-
-    #Write the last response to file
     filename = "Response_" + str(index)+".xml"
     newFile =_os.path.join("export",filename)
     RESPONSE_FILEARRAY.append(newFile)
-
     with open(newFile, "w") as f:
         f.write(response.text.encode("utf8").decode("ascii", "ignore"))
         f.close()
-
     print(RESPONSE_FILEARRAY)
     return RESPONSE_FILEARRAY
-
-
 
 
 def MergeHostAndTags(HOSTS,TAGS):
