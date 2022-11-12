@@ -163,3 +163,8 @@ def MergeHostAndTags(HOSTS,TAGS):
             df1.at[int(hostIndex[0]),TagName] = 1
     df1.to_csv(HOSTS)
 
+
+def deleteTempFiles(files):
+    for file in files:
+        if _os.path.exists(file):
+            _os.remove(file)
