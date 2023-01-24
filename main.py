@@ -1,4 +1,3 @@
-
 import pandas as pd 
 import Modules.Functions as Func
 import Config as Conf
@@ -17,12 +16,17 @@ REQUEST_URL = Conf.base+URL
 
 #processing hostasset api 
 header = Func.getXmlHeader(Conf.USERNAME,Conf.PASSWORD)
-payload = Func.getXmlPayload(0,30)
+payload = {}#Func.getXmlPayload(0,30)
 response = Func.postRequest(REQUEST_URL,payload,header)
 
-if (response.ok != True):
+if ((response.ok != True) or (len(response.text) == 494) ):
   print("Failed to get response from API")
+  print("Check user password")
+  print(response.text)
   exit()
+
+##check login was successful 
+
 
 with open(Conf.RESPONSEXML, "w") as f:
     f.write(response.text.encode("utf8").decode("ascii", "ignore"))
@@ -30,13 +34,16 @@ with open(Conf.RESPONSEXML, "w") as f:
 
  #Create response and get hosts
 RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,Conf.RESPONSEXML,REQUEST_URL,payload,header,Conf.delta)
-
-#Start Tags data
-HW.getTagInfo(RESPONSE_FILEARRAY,Conf.TAGS,Conf.ScanDateforSQL,Conf.USESQL)
-#Start SW data
-HW.getSWInfo(RESPONSE_FILEARRAY,Conf.SW,Conf.ScanDateforSQL,Conf.USESQL)
-#Start Port data
-HW.GetPortInfo(RESPONSE_FILEARRAY,Conf.PORTS,Conf.ScanDateforSQL,Conf.USESQL)
+if (RESPONSE_FILEARRAY):
+  #Start Tags data
+  HW.getTagInfo(RESPONSE_FILEARRAY,Conf.TAGS,Conf.ScanDateforSQL,Conf.USESQL)
+  #Start SW data
+  HW.getSWInfo(RESPONSE_FILEARRAY,Conf.SW,Conf.ScanDateforSQL,Conf.USESQL)
+  #Start Port data
+  HW.GetPortInfo(RESPONSE_FILEARRAY,Conf.PORTS,Conf.ScanDateforSQL,Conf.USESQL)
+else:
+  print("failed to get response from API. please check Response.xml")
+  exit()
 
 #Starting Host Data
 df = pd.read_csv(Conf.TAGS)
@@ -107,13 +114,17 @@ with open(Conf.POLICY_LIST_XML, 'w', encoding="utf-8") as f:
 
 #list of all scans (in all formats)
 Scanlist = PC.getPcScans(Conf.POLICY_LIST_XML,Conf.ScanDateforSQL)
-#list of scan ids (only CSV)
-scans = PC.getListOfScanIds(Scanlist)
-scans.sort()
+if (len(Scanlist)>0):
+  scans = PC.getListOfScanIds(Scanlist)
+  scans.sort()
+  file_array = PC.getCsvReports(scans,URL,payload,header)
+else:
+  print("file array is empty, check "+Conf.POLICY_LIST_XML + " to see if reports of type 'Compliance' of format 'CSV exist")
+  exit()
 
-file_array = PC.getCsvReports(scans,URL,payload,header)
 
-time.sleep(5)
+
+
 
 
 

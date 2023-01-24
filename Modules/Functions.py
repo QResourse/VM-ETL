@@ -105,6 +105,7 @@ def postRequest(URL,payload,headers,files=[]):
 
 
 def getRequest(URL,payload,headers,files=[]):
+    proxy = {}
     print("POSTING to "+ URL)
     print("Payload: "+ str(payload))
     try:

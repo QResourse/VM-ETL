@@ -29,7 +29,11 @@ def getPcScans(POLICY_LIST_XML,ScanDateforSQL):
     root = tree.getroot()
     Data = root.find("RESPONSE")
     reportList = Data.find("REPORT_LIST")
-    reports  = reportList.findall("REPORT")
+    if (reportList):
+      reports  = reportList.findall("REPORT")
+    else:
+      print("no policy report was found")
+      return []
 
     for report in reports:
         Id = Func.tryToGetAttribute(report,"ID")
@@ -52,9 +56,6 @@ def getPcScans(POLICY_LIST_XML,ScanDateforSQL):
                     "EXPIRATION_DATETIME": expires,
                     "STATE":state
                     })
-
-        
-
     return rows
 
 

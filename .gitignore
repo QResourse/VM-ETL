@@ -4,3 +4,4 @@ export/*.pbix
 config.xml
 __pycache__
 debug.py
+*.xml
