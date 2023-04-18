@@ -139,12 +139,12 @@ def pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta):
             f.close()
         index+=1
         print(lastId)
-    filename = "Response_" + str(index)+".xml"
-    newFile =_os.path.join("export",filename)
-    RESPONSE_FILEARRAY.append(newFile)
-    with open(newFile, "w") as f:
-        f.write(response.text.encode("utf8").decode("ascii", "ignore"))
-        f.close()
+    # filename = "Response_" + str(index)+".xml"
+    # newFile =_os.path.join("export",filename)
+    # RESPONSE_FILEARRAY.append(newFile)
+    # with open(newFile, "w") as f:
+    #     f.write(response.text.encode("utf8").decode("ascii", "ignore"))
+    #     f.close()
     print(RESPONSE_FILEARRAY)
     return RESPONSE_FILEARRAY
 

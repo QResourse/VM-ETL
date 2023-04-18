@@ -27,6 +27,8 @@ HOSTS = _os.path.join("export","_hosts.csv")
 TAGS = _os.path.join("export","_tags.csv")
 SW = _os.path.join("export","_sw.csv")
 PORTS = _os.path.join("export","_ports.csv")
+KB_XML = _os.path.join("export","KB.xml")
+KB_CSV = _os.path.join("export","KB.csv")
 USESQL = []
 
 delta = int(configList[7])

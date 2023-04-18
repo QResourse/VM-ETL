@@ -1,4 +1,3 @@
-from typing import Protocol
 import xml.etree.ElementTree as Xet
 import Modules.Functions as Func
 
@@ -7,9 +6,13 @@ import Modules.Functions as Func
 
 def checkForMoreRecords(RESPONSEXML):
     tree = Xet.parse(RESPONSEXML)
-    root = tree.getroot()   
-    Data = root.find("hasMoreRecords")
-    return str(Data.text)
+    root = tree.getroot()
+    recordCount = root.find("count").text
+    if(int(recordCount) > 0):  
+        Data = root.find("hasMoreRecords")
+        return str(Data.text)
+    else:
+        return False
 
 def getLastRecord(RESPONSEXML):
     tree = Xet.parse(RESPONSEXML)
@@ -83,6 +86,34 @@ def getHostAssets(RESPONSEXML,ScanDateforSQL):
         index+=1
     return rows
 
+
+def getQIDs(RESPONSEXML,ScanDateforSQL):
+    index = 0
+    rows = []
+    tree = Xet.parse(RESPONSEXML)
+    root = tree.getroot()
+    RESPONSE = root.find("RESPONSE")
+    VULN_LIST = RESPONSE.find("VULN_LIST")
+    qids  = VULN_LIST.findall("VULN")
+    for qid in qids:
+        SOFTWARE_LIST = qid.find('SOFTWARE_LIST')
+        if (SOFTWARE_LIST):
+            for SW in SOFTWARE_LIST:
+                print("procecing qid ",str(index))
+                QID = Func.tryToGetAttribute(qid,"QID")
+                SEVERITY_LEVEL = Func.tryToGetAttribute(qid,"SEVERITY_LEVEL")
+                PATCHABLE = Func.tryToGetAttribute(qid,"PATCHABLE")
+                PRODUCT = Func.tryToGetAttribute(SW,"PRODUCT")
+                VENDOR = Func.tryToGetAttribute(SW,"VENDOR")
+            rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
+                        "QID": QID,
+                        "SEVERITY_LEVEL": SEVERITY_LEVEL,
+                        "PATCHABLE":PATCHABLE,
+                        "PRODUCT": PRODUCT,
+                        "VENDOR": VENDOR
+                        })
+            index+=1
+    return rows
 
 
 def getHostSoftware(RESPONSEXML,ScanDateforSQL):

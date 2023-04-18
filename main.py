@@ -5,7 +5,7 @@ import Modules.DetectFunc as Detect
 import Modules.HostWrapper as HW
 import Modules.PCFunc as PC
 import time
-
+import Modules.HostFunc as HF
 
 
 ####################Start######################
@@ -153,3 +153,10 @@ if(Conf.USESQL[0]):
   df.to_sql('Detections', index=False, con=Conf.USESQL[1],if_exists=Conf.USESQL[2])
   print("Detections CSV upload to SQL")
 
+####### KB #####
+
+rows = HF.getQIDs(Conf.KB_XML,Conf.ScanDateforSQL)
+cols = ["SCANDATEFORSQL","QID","SEVERITY_LEVEL","PATCHABLE","PRODUCT","VENDOR"]
+print("length of rows: "+ str(len(rows)))
+df = pd.DataFrame(rows, columns=cols)
+df.to_csv(Conf.KB_CSV,index=False, encoding="utf-8")
