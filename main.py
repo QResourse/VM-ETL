@@ -91,6 +91,32 @@ df = pd.DataFrame(rows, columns=cols)
 df.to_csv(Conf.DETECTIONS,index=False, encoding="utf-8")
 
 
+######### KB 
+URL = "/api/2.0/fo/knowledge_base/vuln/"
+action = "?action=list"
+REQUEST_URL = Conf.base+URL+action
+payload={}
+
+#header = Func.getHeader(Conf.USERNAME,Conf.PASSWORD)
+response = Func.getRequest(REQUEST_URL,payload,header)
+
+if (response.ok != True):
+    print("Failed to get response from API")
+
+#Writing the response to a XML file 
+with open(Conf.KB_XML, 'w', encoding="utf-8") as f:
+    f.write(response.text)
+    f.close()
+
+
+rows = HF.getQIDs(Conf.KB_XML,Conf.ScanDateforSQL)
+cols = ["SCANDATEFORSQL","QID","SEVERITY_LEVEL","PATCHABLE","PRODUCT","VENDOR"]
+print("length of rows: "+ str(len(rows)))
+df = pd.DataFrame(rows, columns=cols)
+df.to_csv(Conf.KB_CSV,index=False, encoding="utf-8")
+
+
+
 
 ####################Start######################
 #This is PC API part                   #
@@ -123,14 +149,6 @@ else:
   exit()
 
 
-
-
-
-
-
-
-
-
 ######Start here for debug with static file################
 
 rowsArray = []
@@ -155,8 +173,8 @@ if(Conf.USESQL[0]):
 
 ####### KB #####
 
-rows = HF.getQIDs(Conf.KB_XML,Conf.ScanDateforSQL)
-cols = ["SCANDATEFORSQL","QID","SEVERITY_LEVEL","PATCHABLE","PRODUCT","VENDOR"]
-print("length of rows: "+ str(len(rows)))
-df = pd.DataFrame(rows, columns=cols)
-df.to_csv(Conf.KB_CSV,index=False, encoding="utf-8")
+# rows = HF.getQIDs(Conf.KB_XML,Conf.ScanDateforSQL)
+# cols = ["SCANDATEFORSQL","QID","SEVERITY_LEVEL","PATCHABLE","PRODUCT","VENDOR"]
+# print("length of rows: "+ str(len(rows)))
+# df = pd.DataFrame(rows, columns=cols)
+# df.to_csv(Conf.KB_CSV,index=False, encoding="utf-8")
