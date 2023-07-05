@@ -8,6 +8,17 @@ import Modules.HostFunc as HF
 import os as _os
 import pandas as pd 
 
+
+import re
+
+def filter_xml_chars(text):
+    # Define a regular expression pattern to match special XML characters
+    pattern = re.compile(r'[&<>"\']')
+    # Use the sub() method to replace the matched characters with their escaped versions
+    text = pattern.sub(lambda m: {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'}[m.group(0)], text)
+    return text
+
+
 def connectToSQL():
     conn = pyodbc.connect('Driver={SQL Server};'
                         'Server=MYDESKTOP\SQLEXPRESS;'
@@ -134,8 +145,11 @@ def pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta):
         lastId = HF.getLastRecord(RESPONSEXML)
         payload = getXmlPayload(lastId,delta)
         response = postRequest(URL,payload,header)
+        
         with open(RESPONSEXML, "w") as f:
-            f.write(response.text.encode("utf8").decode("ascii", "ignore"))
+            textClean = filter_xml_chars(response.text.encode("utf8").decode("ascii", "ignore"))
+            #f.write(response.text.encode("utf8").decode("ascii", "ignore"))
+            f.write(textClean)
             f.close()
         index+=1
         print(lastId)

@@ -1,6 +1,14 @@
 
 import pandas as pd
 import Modules.HostFunc as HF
+import re
+
+def filter_xml_chars(text):
+    # Define a regular expression pattern to match special XML characters
+    pattern = re.compile(r'[&<>"\']')
+    # Use the sub() method to replace the matched characters with their escaped versions
+    text = pattern.sub(lambda m: {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'}[m.group(0)], text)
+    return text
 
 def getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL,USESQL):
     #Start SW data
