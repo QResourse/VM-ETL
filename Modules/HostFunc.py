@@ -1,12 +1,16 @@
 import xml.etree.ElementTree as Xet
 import Modules.Functions as Func
-
+from lxml import etree
 
 
 
 def checkForMoreRecords(RESPONSEXML):
-    tree = Xet.parse(RESPONSEXML)
-    root = tree.getroot()
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
+    # tree = Xet.parse(RESPONSEXML)
+    # root = tree.getroot()
     recordCount = root.find("count").text
     if(int(recordCount) > 0):  
         Data = root.find("hasMoreRecords")
@@ -15,15 +19,19 @@ def checkForMoreRecords(RESPONSEXML):
         return False
 
 def getLastRecord(RESPONSEXML):
-    tree = Xet.parse(RESPONSEXML)
-    root = tree.getroot()   
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
     Data = root.find("lastId")
     return str(Data.text)
 
 def getHostTags(RESPONSEXML,ScanDateforSQL):
     rows = []
-    tree = Xet.parse(RESPONSEXML)
-    root = tree.getroot()
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
     Data = root.find("data")
     HostAssets  = Data.findall("HostAsset")
     index = 0
@@ -47,8 +55,10 @@ def getHostTags(RESPONSEXML,ScanDateforSQL):
 def getHostAssets(RESPONSEXML,ScanDateforSQL):
     index = 0
     rows = []
-    tree = Xet.parse(RESPONSEXML)
-    root = tree.getroot()
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
     Data = root.find("data")
     HostAssets  = Data.findall("HostAsset")
     for host in HostAssets:
@@ -90,8 +100,10 @@ def getHostAssets(RESPONSEXML,ScanDateforSQL):
 def getQIDs(RESPONSEXML,ScanDateforSQL):
     index = 0
     rows = []
-    tree = Xet.parse(RESPONSEXML)
-    root = tree.getroot()
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
     RESPONSE = root.find("RESPONSE")
     VULN_LIST = RESPONSE.find("VULN_LIST")
     qids  = VULN_LIST.findall("VULN")
@@ -118,8 +130,10 @@ def getQIDs(RESPONSEXML,ScanDateforSQL):
 
 def getHostSoftware(RESPONSEXML,ScanDateforSQL):
     rows = []
-    tree = Xet.parse(RESPONSEXML)
-    root = tree.getroot()
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
     Data = root.find("data")
     HostAssets  = Data.findall("HostAsset")
     index = 0
@@ -144,8 +158,10 @@ def getHostSoftware(RESPONSEXML,ScanDateforSQL):
 
 def getHostOpenPorts(RESPONSEXML,ScanDateforSQL):
     rows = []
-    tree = Xet.parse(RESPONSEXML)
-    root = tree.getroot()
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
     Data = root.find("data")
     HostAssets  = Data.findall("HostAsset")
     index = 0

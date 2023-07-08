@@ -1,5 +1,5 @@
-import xml.etree.ElementTree as Xet
 import requests
+from lxml import etree as ltree
 import xml.etree.ElementTree as Xet
 import base64
 from datetime import timedelta, date
@@ -147,9 +147,9 @@ def pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta):
         response = postRequest(URL,payload,header)
         
         with open(RESPONSEXML, "w") as f:
-            textClean = filter_xml_chars(response.text.encode("utf8").decode("ascii", "ignore"))
-            #f.write(response.text.encode("utf8").decode("ascii", "ignore"))
-            f.write(textClean)
+            #textClean = filter_xml_chars(response.text.encode("utf8").decode("ascii", "ignore"))
+            f.write(response.text.encode("utf8").decode("ascii", "ignore"))
+            #f.write(textClean)
             f.close()
         index+=1
         print(lastId)
