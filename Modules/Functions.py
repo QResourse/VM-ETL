@@ -153,6 +153,7 @@ def pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta):
             f.close()
         index+=1
         print(lastId)
+    
     # filename = "Response_" + str(index)+".xml"
     # newFile =_os.path.join("export",filename)
     # RESPONSE_FILEARRAY.append(newFile)

@@ -100,10 +100,12 @@ def getHostAssets(RESPONSEXML,ScanDateforSQL):
 def getQIDs(RESPONSEXML,ScanDateforSQL):
     index = 0
     rows = []
-    with open(RESPONSEXML, "r") as f:
-        xml = f.read()
-    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
-    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
+    # with open(RESPONSEXML, "r") as f:
+    #     xml = f.read()
+    tree = Xet.parse(RESPONSEXML)
+    root = tree.getroot()
+    # parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    # root = etree.fromstring(xml.encode('utf-8'), parser=parser)
     RESPONSE = root.find("RESPONSE")
     VULN_LIST = RESPONSE.find("VULN_LIST")
     qids  = VULN_LIST.findall("VULN")
