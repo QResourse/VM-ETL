@@ -11,12 +11,33 @@ import Modules.HostFunc as HF
 ####################Start######################
 #This is hostasset API part                   #
 ###############################################
-URL = "/qps/rest/2.0/search/am/hostasset/"
-REQUEST_URL = Conf.base+URL
 
-#processing hostasset api 
-header = Func.getXmlHeader(Conf.USERNAME,Conf.PASSWORD)
-payload = {}#Func.getXmlPayload(0,30)
+
+#get token
+BASE = Conf.base
+GATEWAY = BASE.replace("qualysapi","gateway")
+cleanPassword = Conf.PASSWORD.replace("%","%25")
+safePassword = cleanPassword.replace("&","%26")
+safePassword = safePassword.replace("#","%23")
+safePassword = safePassword.replace("^",'%5E')
+payload = 'username='+Conf.USERNAME+"&password="+safePassword+"&token=true"
+header = Func.getTokenHeader() 
+REQUEST_URL = GATEWAY+"/auth"
+response = Func.postRequest(REQUEST_URL,payload,header)
+if (response.ok != True):
+  print("Failed to get response from API")
+  exit()
+
+token = response.text
+
+## getting assets 
+URL = "/rest/2.0/search/am/asset/"
+REQUEST_URL = GATEWAY + URL
+
+
+header = Func.getHeaderBearer(token)
+payload={}
+
 response = Func.postRequest(REQUEST_URL,payload,header)
 
 if ((response.ok != True) or (len(response.text) == 494) ):
@@ -25,22 +46,20 @@ if ((response.ok != True) or (len(response.text) == 494) ):
   print(response.text)
   exit()
 
-##check login was successful 
-
-
 with open(Conf.RESPONSEXML, "w") as f:
     f.write(response.text.encode("utf8").decode("ascii", "ignore"))
     f.close()
 
+
  #Create response and get hosts
-RESPONSE_FILEARRAY =  Func.pocessHostRequests(response,Conf.RESPONSEXML,REQUEST_URL,payload,header,Conf.delta)
+RESPONSE_FILEARRAY =  Func.pocessHostRequests(header,Conf.RESPONSEXML,REQUEST_URL)
 if (RESPONSE_FILEARRAY):
   #Start Tags data
   HW.getTagInfo(RESPONSE_FILEARRAY,Conf.TAGS,Conf.ScanDateforSQL,Conf.USESQL)
   #Start SW data
-  HW.getSWInfo(RESPONSE_FILEARRAY,Conf.SW,Conf.ScanDateforSQL,Conf.USESQL)
+  #HW.getSWInfo(RESPONSE_FILEARRAY,Conf.SW,Conf.ScanDateforSQL,Conf.USESQL)
   #Start Port data
-  HW.GetPortInfo(RESPONSE_FILEARRAY,Conf.PORTS,Conf.ScanDateforSQL,Conf.USESQL)
+  #HW.GetPortInfo(RESPONSE_FILEARRAY,Conf.PORTS,Conf.ScanDateforSQL,Conf.USESQL)
 else:
   print("failed to get response from API. please check Response.xml")
   exit()
@@ -53,7 +72,7 @@ list_of_tags=list(tags_for_columns)
 #start Asset data
 HW.GetAssetInfo(RESPONSE_FILEARRAY,Conf.HOSTS,Conf.ScanDateforSQL,list_of_tags,Conf.USESQL)
 
-Func.MergeHostAndTags(Conf.HOSTS,Conf.TAGS)
+#Func.MergeHostAndTags(Conf.HOSTS,Conf.TAGS)
 time.sleep(5)
 
 ####################Start######################
@@ -69,6 +88,7 @@ cols = ['SCANDATEFORSQL','HOST_ID','IP_ADDRESS','TRACKING_METHOD','NETWORK_ID','
 payload={'action': 'list',
 'status': 'New,Active,Fixed,Re-Opened',
 'detection_updated_since': Conf.DateForSearch,
+'show_asset_id':1,
 'output_format': 'XML',
 'truncation_limit': '1000000'}
 
@@ -95,7 +115,8 @@ df.to_csv(Conf.DETECTIONS,index=False, encoding="utf-8")
 URL = "/api/2.0/fo/knowledge_base/vuln/"
 action = "?action=list"
 REQUEST_URL = Conf.base+URL+action
-payload={}
+payload = {'action': 'list',
+'details': 'All'}
 
 #header = Func.getHeader(Conf.USERNAME,Conf.PASSWORD)
 response = Func.getRequest(REQUEST_URL,payload,header)

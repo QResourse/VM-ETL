@@ -18,6 +18,36 @@ def checkForMoreRecords(RESPONSEXML):
     else:
         return False
 
+
+def checkForMoreRecordsBool(RESPONSEXML):
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
+    recordCount = root.find("count").text
+    if(int(recordCount) > 0): 
+        if (int(root.find("hasMore").text)==1):
+            return True
+        else:
+            return False
+    else:
+        return False
+    
+
+def checkForMoreHostRecords(RESPONSEXML):
+    with open(RESPONSEXML, "r") as f:
+        xml = f.read()
+    parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
+    root = etree.fromstring(xml.encode('utf-8'), parser=parser)
+    # tree = Xet.parse(RESPONSEXML)
+    # root = tree.getroot()
+    recordCount = root.find("count").text
+    if(int(recordCount) > 0):  
+        Data = root.find("lastSeenAssetId")
+        return str(Data.text)
+    else:
+        return str(0)
+
 def getLastRecord(RESPONSEXML):
     with open(RESPONSEXML, "r") as f:
         xml = f.read()
@@ -32,18 +62,21 @@ def getHostTags(RESPONSEXML,ScanDateforSQL):
         xml = f.read()
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
     root = etree.fromstring(xml.encode('utf-8'), parser=parser)
-    Data = root.find("data")
-    HostAssets  = Data.findall("HostAsset")
+    Data = root.find("assetListData")
+    HostAssets  = Data.findall("asset")
     index = 0
     for host in HostAssets:
         print("procecing tag ",str(index))
-        id = host.find("id").text
-        tagsObj = host.findall("tags/list/TagSimple")
-        for tag in tagsObj:
-            tagId = Func.tryToGetAttribute(tag,"id")
-            tagName= Func.tryToGetAttribute(tag,"name")
+        id = host.find("assetId").text
+        hid = host.find("hostId").text
+        tagsObj = host.find("tagList")
+        tagList = tagsObj.findall("tag")
+        for tag in tagList:
+            tagId = Func.tryToGetAttribute(tag,"tagId")
+            tagName= Func.tryToGetAttribute(tag,"tagName")
             rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
                     "HOST_ID": id,
+                    "ASSET_ID": hid,
                     "TAG_NAME": tagName,
                     "TAG_ID":tagId
                     })
@@ -59,38 +92,34 @@ def getHostAssets(RESPONSEXML,ScanDateforSQL):
         xml = f.read()
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
     root = etree.fromstring(xml.encode('utf-8'), parser=parser)
-    Data = root.find("data")
-    HostAssets  = Data.findall("HostAsset")
+    Data = root.find("assetListData")
+    HostAssets  = Data.findall("asset")
     for host in HostAssets:
         print("procecing host ",str(index))
-        id = Func.tryToGetAttribute(host,"id")
-        name = Func.tryToGetAttribute(host,"name")
-        created = Func.tryToGetAttribute(host,"created")
-        modified = Func.tryToGetAttribute(host,"modified")
-        type= Func.tryToGetAttribute(host,"type")
-        qwebHostID = Func.tryToGetAttribute(host,"qwebHostId")
+        id = Func.tryToGetAttribute(host,"assetId")
+        hostID = Func.tryToGetAttribute(host,"hostId")
+        name = Func.tryToGetAttribute(host,"assetName")
+        created = Func.tryToGetAttribute(host,"createdDate")
+        #modified = Func.tryToGetAttribute(host,"modified")
+        type= Func.tryToGetAttribute(host,"assetType")
+        #qwebHostID = Func.tryToGetAttribute(host,"qwebHostId")
         ip_address = Func.tryToGetAttribute(host,"address")
-        fqdn = Func.tryToGetAttribute(host,"fqdn")
-        os = Func.tryToGetAttribute(host,"os")
-        dns= Func.tryToGetAttribute(host,"dnsHostName")
-        agentVer = Func.tryToGetAttribute(host,"agentInfo/agentVersion")
-        agentId = Func.tryToGetAttribute(host,"agentInfo/agentId")
-        status = Func.tryToGetAttribute(host,"agentInfo/status")
-        lastCheckedIn= Func.tryToGetAttribute(host,"agentInfo/lastCheckedIn")
+        #fqdn = Func.tryToGetAttribute(host,"fqdn")
+        os = Func.tryToGetAttribute(host,"operatingSystem/osName")
+        dns= Func.tryToGetAttribute(host,"dnsName")
+        #agentVer = Func.tryToGetAttribute(host,"agentInfo/agentVersion")
+        #agentId = Func.tryToGetAttribute(host,"agentInfo/agentId")
+        #status = Func.tryToGetAttribute(host,"agentInfo/status"
+        lastCheckedIn= Func.tryToGetAttribute(host,"sensorLastUpdatedDate")
         rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
-                    "HOST_ID": id,
+                    "HOST_ID": hostID,
+                    "ASSET_ID": id,
                     "NAME": name,
                     "CREATED":created,
-                    "MODIFIED": modified,
                     "TYPE": type,
-                    "QWEB_HOST_ID": qwebHostID,
                     "IP_ADDRESS": ip_address,
-                    "FQDN" : fqdn,
                     "OPERATING_SYSTEM" : os,
                     "DNS_NAME" : dns,
-                    "AGENT_VERSION" : agentVer,
-                    "AGENT_ID" : agentId,
-                    "STATUS" : status,
                     "LAST_CHEKCED_IN" : lastCheckedIn
                     })
         index+=1
@@ -118,6 +147,7 @@ def getQIDs(RESPONSEXML,ScanDateforSQL):
                 SEVERITY_LEVEL = Func.tryToGetAttribute(qid,"SEVERITY_LEVEL")
                 PATCHABLE = Func.tryToGetAttribute(qid,"PATCHABLE")
                 PRODUCT = Func.tryToGetAttribute(SW,"PRODUCT")
+                VENDOR = Func.tryToGetAttribute(SW,"VENDOR")
                 VENDOR = Func.tryToGetAttribute(SW,"VENDOR")
             rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
                         "QID": QID,

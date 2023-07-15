@@ -20,7 +20,7 @@ def getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL,USESQL):
 
 def getTagInfo(RESPONSE_FILEARRAY,TAGS,ScanDateforSQL,USESQL):
     #Start Tags data
-    cols = ["SCANDATEFORSQL","HOST_ID","TAG_ID","TAG_NAME"]
+    cols = ["SCANDATEFORSQL","HOST_ID","ASSET_ID","TAG_ID","TAG_NAME"]
     rows = []
     for filename in RESPONSE_FILEARRAY:
         print("Processing file name: " + filename)
@@ -51,8 +51,10 @@ def GetPortInfo(RESPONSE_FILEARRAY,PORTS,ScanDateforSQL,USESQL):
 
 def GetAssetInfo(RESPONSE_FILEARRAY,HOSTS,ScanDateforSQL,list_of_tags,USESQL):
 
-    cols = ["SCANDATEFORSQL","HOST_ID","NAME","CREATED","MODIFIED","TYPE","QWEB_HOST_ID","IP_ADDRESS",\
-    "FQDN","OPERATING_SYSTEM","DNS_NAME","AGENT_VERSION","AGENT_ID","STATUS","LAST_CHEKCED_IN"]
+    # cols = ["SCANDATEFORSQL","HOST_ID","ASSET_ID","NAME","CREATED","MODIFIED","TYPE","QWEB_HOST_ID","IP_ADDRESS",\
+    # "FQDN","OPERATING_SYSTEM","DNS_NAME","AGENT_VERSION","AGENT_ID","STATUS","LAST_CHEKCED_IN"]
+    cols = ["SCANDATEFORSQL","HOST_ID","ASSET_ID","NAME","CREATED","TYPE","IP_ADDRESS",\
+    "OPERATING_SYSTEM","DNS_NAME","LAST_CHEKCED_IN"]
 
     for item in list_of_tags:
         cols.append(item)

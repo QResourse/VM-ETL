@@ -7,7 +7,7 @@ import pyodbc
 import Modules.HostFunc as HF
 import os as _os
 import pandas as pd 
-
+import shutil as SU
 
 import re
 
@@ -102,6 +102,7 @@ def getHeader(USERNAME,PASSWORD):
 def postRequest(URL,payload,headers,files=[]):
     print("POSTING to "+ URL)
     print("Payload: "+ str(payload))
+    print("Header: ",headers)
     try:
         response = requests.request("POST", URL, headers=headers, data=payload, files=files)
     except:
@@ -119,6 +120,7 @@ def getRequest(URL,payload,headers,files=[]):
     proxy = {}
     print("POSTING to "+ URL)
     print("Payload: "+ str(payload))
+    print("Header: ",headers)
     try:
         response = requests.request("GET", URL, headers=headers, data=payload, files=files)
     except:
@@ -130,36 +132,69 @@ def getRequest(URL,payload,headers,files=[]):
     else:
         return  response
 
+def getTokenHeader():
+    headers = {
+    "Content-Type": "application/x-www-form-urlencoded",
+    "Accept": "application/json",
+    "X-Requested-With": "QualysPostman",
+    }
+    return headers
 
 
-def pocessHostRequests(response,RESPONSEXML,URL,payload,header,delta):
+def getHeaderBearer(token):
+    headers = {
+    'Content-Type': 'application/xml',
+    'Accept': 'application/xml',
+    "X-Requested-With": "QualysPostman",
+    'pageSize': '100',
+    #'X-Requested-With': 'QualysPostman',
+    'Authorization': 'Bearer '+ token
+    }
+    return headers
+
+
+def getNewHeaderBearer(token,lastId):
+    headers = {
+    'Content-Type': 'application/xml',
+    'Accept': 'application/xml',
+    'X-Requested-With': 'QualysPostman',
+    'lastSeenAssetId': lastId,
+    'pageSize': '100',
+    #'X-Requested-With': 'QualysPostman',
+    'Authorization': 'Bearer '+ token
+    }
+    return headers
+    
+
+def pocessHostRequests(header,RESPONSEXML,URL):
     RESPONSE_FILEARRAY = []
     index = 1
-    while(HF.checkForMoreRecords(RESPONSEXML) == 'true'):
-        filename = "Response_" + str(index)+".xml"
-        newFile =_os.path.join("export",filename)
-        RESPONSE_FILEARRAY.append(newFile)
-        with open(newFile, "w") as f:
-            f.write(response.text.encode("utf8").decode("ascii", "ignore"))
-            f.close()
-        lastId = HF.getLastRecord(RESPONSEXML)
-        payload = getXmlPayload(lastId,delta)
-        response = postRequest(URL,payload,header)
-        
-        with open(RESPONSEXML, "w") as f:
-            #textClean = filter_xml_chars(response.text.encode("utf8").decode("ascii", "ignore"))
-            f.write(response.text.encode("utf8").decode("ascii", "ignore"))
-            #f.write(textClean)
-            f.close()
-        index+=1
-        print(lastId)
-    
-    # filename = "Response_" + str(index)+".xml"
-    # newFile =_os.path.join("export",filename)
-    # RESPONSE_FILEARRAY.append(newFile)
-    # with open(newFile, "w") as f:
-    #     f.write(response.text.encode("utf8").decode("ascii", "ignore"))
-    #     f.close()
+    while(int(HF.checkForMoreHostRecords(RESPONSEXML)) > 0 ):
+        if (index == 1):
+            filename = "Response_" + str(index)+".xml"
+            newFile =_os.path.join("export",filename)
+            SU.copyfile(RESPONSEXML, newFile)
+            RESPONSE_FILEARRAY.append(newFile)
+            index+=1
+        lastId = HF.checkForMoreHostRecords(RESPONSEXML)
+        _os.remove(RESPONSEXML)
+        payload= {}
+        #header = getNewHeaderBearer(token,lastId)
+        requestUrl = URL+"?lastSeenAssetId="+str(lastId)
+        response = postRequest(requestUrl,payload,header)
+        if(response.status_code == 200):
+            with open(RESPONSEXML, "w") as f:
+                f.write(response.text.encode("utf8").decode("ascii", "ignore"))
+                f.close()
+            filename = "Response_" + str(index)+".xml"
+            newFile =_os.path.join("export",filename)
+            SU.copyfile(RESPONSEXML, newFile)
+            RESPONSE_FILEARRAY.append(newFile)
+            if(HF.checkForMoreRecordsBool(RESPONSEXML)):
+                index+=1
+            else:
+                break
+
     print(RESPONSE_FILEARRAY)
     return RESPONSE_FILEARRAY
 
