@@ -9,8 +9,6 @@ def checkForMoreRecords(RESPONSEXML):
         xml = f.read()
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
     root = etree.fromstring(xml.encode('utf-8'), parser=parser)
-    # tree = Xet.parse(RESPONSEXML)
-    # root = tree.getroot()
     recordCount = root.find("count").text
     if(int(recordCount) > 0):  
         Data = root.find("hasMoreRecords")
@@ -39,8 +37,6 @@ def checkForMoreHostRecords(RESPONSEXML):
         xml = f.read()
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
     root = etree.fromstring(xml.encode('utf-8'), parser=parser)
-    # tree = Xet.parse(RESPONSEXML)
-    # root = tree.getroot()
     recordCount = root.find("count").text
     if(int(recordCount) > 0):  
         Data = root.find("lastSeenAssetId")
@@ -70,17 +66,21 @@ def getHostTags(RESPONSEXML,ScanDateforSQL):
         id = host.find("assetId").text
         hid = host.find("hostId").text
         tagsObj = host.find("tagList")
-        tagList = tagsObj.findall("tag")
-        for tag in tagList:
-            tagId = Func.tryToGetAttribute(tag,"tagId")
-            tagName= Func.tryToGetAttribute(tag,"tagName")
-            rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
-                    "HOST_ID": id,
-                    "ASSET_ID": hid,
-                    "TAG_NAME": tagName,
-                    "TAG_ID":tagId
-                    })
-            
+        try:
+            len(tagsObj)>0
+        except:
+            break
+        if (tagsObj):
+            tagList = tagsObj.findall("tag")
+            for tag in tagList:
+                tagId = Func.tryToGetAttribute(tag,"tagId")
+                tagName= Func.tryToGetAttribute(tag,"tagName")
+                rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
+                        "HOST_ID": hid,
+                        "ASSET_ID": id,
+                        "TAG_NAME": tagName,
+                        "TAG_ID":tagId
+                        })        
         index+=1
     return rows
 
@@ -129,12 +129,8 @@ def getHostAssets(RESPONSEXML,ScanDateforSQL):
 def getQIDs(RESPONSEXML,ScanDateforSQL):
     index = 0
     rows = []
-    # with open(RESPONSEXML, "r") as f:
-    #     xml = f.read()
     tree = Xet.parse(RESPONSEXML)
     root = tree.getroot()
-    # parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
-    # root = etree.fromstring(xml.encode('utf-8'), parser=parser)
     RESPONSE = root.find("RESPONSE")
     VULN_LIST = RESPONSE.find("VULN_LIST")
     qids  = VULN_LIST.findall("VULN")

@@ -101,8 +101,8 @@ def getHeader(USERNAME,PASSWORD):
 
 def postRequest(URL,payload,headers,files=[]):
     print("POSTING to "+ URL)
-    print("Payload: "+ str(payload))
-    print("Header: ",headers)
+    #print("Payload: "+ str(payload))
+    #print("Header: ",headers)
     try:
         response = requests.request("POST", URL, headers=headers, data=payload, files=files)
     except:
@@ -177,7 +177,7 @@ def pocessHostRequests(header,RESPONSEXML,URL):
             RESPONSE_FILEARRAY.append(newFile)
             index+=1
         lastId = HF.checkForMoreHostRecords(RESPONSEXML)
-        _os.remove(RESPONSEXML)
+        #_os.remove(RESPONSEXML)
         payload= {}
         #header = getNewHeaderBearer(token,lastId)
         requestUrl = URL+"?lastSeenAssetId="+str(lastId)
@@ -203,14 +203,14 @@ def MergeHostAndTags(HOSTS,TAGS):
     df1 = pd.read_csv(HOSTS)
     df2 = pd.read_csv(TAGS)
     #list of hosts from _host file
-    listOfHosts= df1.HOST_ID.unique().tolist()
+    listOfHosts= df1.ASSET_ID.unique().tolist()
     for host in listOfHosts:
         #all the indexes of tags relevent to host
         tagIndexList = df2.index[df2['HOST_ID']==host].tolist()
-        print("Host ID: "+ str(host) + "Tag list: "+str(tagIndexList))
+        print("Host ID: "+ str(host) + " Tag list: "+str(tagIndexList))
         for index in tagIndexList:
             TagName =  df2.iloc[index][3]
-            hostIndex = df1.index[df1['HOST_ID']==host].tolist()
+            hostIndex = df1.index[df1['ASSET_ID']==host].tolist()
             df1.at[int(hostIndex[0]),TagName] = 1
     df1.to_csv(HOSTS)
 
