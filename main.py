@@ -43,7 +43,7 @@ response = Func.postRequest(REQUEST_URL,payload,header)
 if ((response.ok != True) or (len(response.text) == 494) ):
   print("Failed to get response from API")
   print("Check user password")
-  print(response.text)
+  print(response)
   exit()
 
 with open(Conf.RESPONSEXML, "w") as f:
