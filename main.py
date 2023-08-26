@@ -57,7 +57,7 @@ if (RESPONSE_FILEARRAY):
   #Start Tags data
   HW.getTagInfo(RESPONSE_FILEARRAY,Conf.TAGS,Conf.ScanDateforSQL,Conf.USESQL)
   #Start SW data
-  #HW.getSWInfo(RESPONSE_FILEARRAY,Conf.SW,Conf.ScanDateforSQL,Conf.USESQL)
+  HW.getSWInfo(RESPONSE_FILEARRAY,Conf.SW,Conf.ScanDateforSQL,Conf.USESQL)
   #Start Port data
   #HW.GetPortInfo(RESPONSE_FILEARRAY,Conf.PORTS,Conf.ScanDateforSQL,Conf.USESQL)
 else:

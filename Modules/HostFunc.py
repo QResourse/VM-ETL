@@ -162,20 +162,34 @@ def getHostSoftware(RESPONSEXML,ScanDateforSQL):
         xml = f.read()
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
     root = etree.fromstring(xml.encode('utf-8'), parser=parser)
-    Data = root.find("data")
-    HostAssets  = Data.findall("HostAsset")
+    Data = root.find("assetListData")
+    HostAssets  = Data.findall("asset")
     index = 0
     for host in HostAssets:
         print("procecing software ",str(index))
-        id = host.find("id").text
-        swList = host.findall("software/list/HostAssetSoftware")
+        assetId = host.find("assetId").text
+        hostId = host.find("hostId").text
+        swList = host.findall("softwareListData/software")
         for sw in swList:
-            swName = Func.tryToGetAttribute(sw,"name")
-            swVersion = Func.tryToGetAttribute(sw,"version")
+            swName = Func.tryToGetAttribute(sw,"fullName")
+            softwareType = Func.tryToGetAttribute(sw,"softwareType")
+            category1 = Func.tryToGetAttribute(sw,"category1")
+            category2 = Func.tryToGetAttribute(sw,"category2")
+            productName = Func.tryToGetAttribute(sw,"productName")
+            component = Func.tryToGetAttribute(sw,"component")
+            publisher = Func.tryToGetAttribute(sw,"publisher")
+            marketVersion = Func.tryToGetAttribute(sw,"marketVersion")
             rows.append({'SCANDATEFORSQL' : ScanDateforSQL,
-                    "HOST_ID": id,
+                    "HOST_ID": hostId,
+                    "ASSET_ID": assetId,
                     "SW_NAME": swName,
-                    "SW_VERSION":swVersion
+                    "SW_Type":softwareType,
+                    "category1": category1,
+                    "category2": category2,
+                    "productName": productName,
+                    "component": component,
+                    "publisher": publisher,
+                    "marketVersion": marketVersion
                     })
             
         index+=1

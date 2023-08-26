@@ -4,7 +4,7 @@ import Modules.HostFunc as HF
 
 def getSWInfo(RESPONSE_FILEARRAY,SW,ScanDateforSQL,USESQL):
     #Start SW data
-    cols = ["SCANDATEFORSQL","HOST_ID","SW_NAME","SW_VERSION"]
+    cols = ["SCANDATEFORSQL","HOST_ID","ASSET_ID","SW_NAME","SW_Type","category1","category2","productName","component","publisher","marketVersion"]
     rows = []
     for filename in RESPONSE_FILEARRAY:
         print("Processing file name: " + filename)
